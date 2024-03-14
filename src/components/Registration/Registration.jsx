@@ -1,140 +1,90 @@
-import { useState, useRef } from 'react';
-
-import { EMAIL_REGEXP, PASSWORD_REGEXP } from '../../core/utils/regex';
+import { useRef, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { registrationSchema } from '../../core/validation/validation';
 import styles from './registration.module.css';
 
 const Registration = () => {
 	const buttonRef = useRef(null);
-	const [form, setForm] = useState({
-		email: '',
-		password: '',
-		passwordRepeat: '',
+
+	const {
+		reset,
+		register,
+		handleSubmit,
+		formState: { errors, isValid },
+	} = useForm({
+		defaultValues: {
+			email: '',
+			password: '',
+			passwordRepeat: '',
+		},
+		resolver: yupResolver(registrationSchema),
 	});
-	const [emailErrorMessage, setEmailErrorMessage] = useState('');
-	const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
-	const [passwordRepeatErrorMessage, setPasswordRepeatErrorMessage] = useState('');
-	const isActiveButton =
-		!emailErrorMessage &&
-		!passwordErrorMessage &&
-		!passwordRepeatErrorMessage &&
-		form.email &&
-		form.password &&
-		form.passwordRepeat;
 
-	const validateField = (name, value) => {
-		switch (name) {
-			case 'email':
-				setEmailErrorMessage('');
-				if (!EMAIL_REGEXP.test(value)) {
-					setEmailErrorMessage('Please enter a valid email!');
-				}
-				break;
-			case 'password':
-				setPasswordErrorMessage('');
-				if (!PASSWORD_REGEXP.test(value)) {
-					setPasswordErrorMessage(
-						'Password must be consider at least one number, one special character, uppercase or lowercase symbols!\n',
-					);
-				}
-				if (value.length < 8) {
-					setPasswordErrorMessage(
-						(prev) => prev + 'Password must be at least 8 characters!',
-					);
-				}
-				break;
-			default:
-				setPasswordRepeatErrorMessage('');
-				if (form.password !== value) {
-					setPasswordRepeatErrorMessage('Passwords are not matching!');
-				}
-				break;
-		}
-	};
+	useEffect(() => {
+		buttonRef.current.disabled =
+			errors.email || errors.password || errors.passwordRepeat;
+	}, [errors.email, errors.password, errors.passwordRepeat]);
 
-	const onChange = (event) => {
-		const { value, name } = event.target;
-		setForm((prev) => {
-			return {
-				...prev,
-				[name]: value,
-			};
-		});
-
-		validateField(name, value);
-	};
-
-	const onBlur = () => {
-		if (isActiveButton) {
+	useEffect(() => {
+		if (isValid) {
 			buttonRef.current.focus();
 		}
-	};
+	}, [isValid]);
 
-	const handleSubmit = (event) => {
-		event.preventDefault();
-		console.log(form);
+	const onSubmit = (data) => {
+		buttonRef.current.disabled = true;
+		setTimeout(() => {
+			console.log(data);
+			reset();
+			buttonRef.current.disabled = false;
+		}, 3000);
 	};
 
 	return (
 		<main className={styles.formWrapper}>
-			<h2 className={styles.title}>Create account</h2>
-			<form
-				onSubmit={handleSubmit}
-				className={styles.form}
-				autoComplete="off"
-				role="presentation"
-			>
+			<h2 className={styles.title}>Регистрация</h2>
+			<form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
 				<div className={styles.field}>
 					<label htmlFor="email">Email</label>
 					<input
-						type="email"
+						type="text"
 						id="email"
-						name="email"
-						placeholder="Enter email"
-						value={form.email}
-						onChange={onChange}
-						onBlur={onBlur}
+						placeholder="Введите email"
+						{...register('email')}
 					/>
-					{emailErrorMessage && (
-						<p className={styles.errorMessage}>{emailErrorMessage}</p>
+					{errors.email && (
+						<p className={styles.errorMessage}>{errors.email.message}</p>
 					)}
 				</div>
-
 				<div className={styles.field}>
 					<label htmlFor="password">Password</label>
 					<input
 						type="password"
 						id="password"
-						name="password"
-						placeholder="Enter password"
-						value={form.password}
-						onChange={onChange}
-						onBlur={onBlur}
+						placeholder="Введите пароль"
+						{...register('password')}
 					/>
-					{passwordErrorMessage && (
-						<p className={styles.errorMessage}>{passwordErrorMessage}</p>
+					{errors.password && (
+						<p className={styles.errorMessage}>{errors.password.message}</p>
 					)}
 				</div>
-
 				<div className={styles.field}>
 					<label htmlFor="passwordRepeat">Repeat password</label>
 					<input
 						type="password"
 						id="passwordRepeat"
-						name="passwordRepeat"
-						placeholder="Repeat password"
-						value={form.passwordRepeat}
-						onChange={onChange}
-						onBlur={onBlur}
+						placeholder="Подтвердите пароль"
+						{...register('passwordRepeat')}
 					/>
-					{passwordRepeatErrorMessage && (
+					{errors.passwordRepeat && (
 						<p className={styles.errorMessage}>
-							{passwordRepeatErrorMessage}
+							{errors.passwordRepeat.message}
 						</p>
 					)}
 				</div>
-
-				<button ref={buttonRef} disabled={!isActiveButton} type="submit">
-					Create Account
+				<button ref={buttonRef} type="submit">
+					Зарегистрироваться
 				</button>
 			</form>
 		</main>

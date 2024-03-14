@@ -37,7 +37,7 @@ label {
 	color: #1e1e1e;
 }
 
-input[type='email'],
+input[type='text'],
 input[type='password'] {
 	background-color: #ffffff;
 	width: 100%;
@@ -48,12 +48,12 @@ input[type='password'] {
 	color: #1e1e1e;
 }
 
-input[type='email']:hover,
+input[type='text']:hover,
 input[type='password']:hover {
 	border: 2px solid rgba(70, 95, 241, 1);
 }
 
-input[type='email']:focus,
+input[type='text']:focus,
 input[type='password']:focus {
 	border: 2px solid rgba(70, 95, 241, 1);
 	background-color: #fbfbfb;

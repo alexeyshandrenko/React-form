@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 import { EMAIL_REGEXP, PASSWORD_REGEXP } from '../../core/utils/regex';
 import styles from './registration.module.css';
 
 const Registration = () => {
+	const buttonRef = useRef(null);
 	const [form, setForm] = useState({
 		email: '',
 		password: '',
@@ -12,6 +13,13 @@ const Registration = () => {
 	const [emailErrorMessage, setEmailErrorMessage] = useState('');
 	const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
 	const [passwordRepeatErrorMessage, setPasswordRepeatErrorMessage] = useState('');
+	const isActiveButton =
+		!emailErrorMessage &&
+		!passwordErrorMessage &&
+		!passwordRepeatErrorMessage &&
+		form.email &&
+		form.password &&
+		form.passwordRepeat;
 
 	const validateField = (name, value) => {
 		switch (name) {
@@ -35,7 +43,8 @@ const Registration = () => {
 				}
 				break;
 			default:
-				if (form.password && form.password !== form.passwordRepeat) {
+				setPasswordRepeatErrorMessage('');
+				if (form.password !== value) {
 					setPasswordRepeatErrorMessage('Passwords are not matching!');
 				}
 				break;
@@ -52,6 +61,12 @@ const Registration = () => {
 		});
 
 		validateField(name, value);
+	};
+
+	const onBlur = () => {
+		if (isActiveButton) {
+			buttonRef.current.focus();
+		}
 	};
 
 	const handleSubmit = (event) => {
@@ -77,6 +92,7 @@ const Registration = () => {
 						placeholder="Enter email"
 						value={form.email}
 						onChange={onChange}
+						onBlur={onBlur}
 					/>
 					{emailErrorMessage && (
 						<p className={styles.errorMessage}>{emailErrorMessage}</p>
@@ -92,6 +108,7 @@ const Registration = () => {
 						placeholder="Enter password"
 						value={form.password}
 						onChange={onChange}
+						onBlur={onBlur}
 					/>
 					{passwordErrorMessage && (
 						<p className={styles.errorMessage}>{passwordErrorMessage}</p>
@@ -107,6 +124,7 @@ const Registration = () => {
 						placeholder="Repeat password"
 						value={form.passwordRepeat}
 						onChange={onChange}
+						onBlur={onBlur}
 					/>
 					{passwordRepeatErrorMessage && (
 						<p className={styles.errorMessage}>
@@ -115,7 +133,7 @@ const Registration = () => {
 					)}
 				</div>
 
-				<button type="submit" disabled={false}>
+				<button ref={buttonRef} disabled={!isActiveButton} type="submit">
 					Create Account
 				</button>
 			</form>
